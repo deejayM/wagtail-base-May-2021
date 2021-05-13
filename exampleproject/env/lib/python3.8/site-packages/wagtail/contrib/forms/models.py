@@ -12,7 +12,6 @@ from django.utils.formats import date_format
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-
 from wagtail.admin.edit_handlers import FieldPanel
 from wagtail.admin.mail import send_mail
 from wagtail.contrib.forms.utils import get_field_clean_name
@@ -118,7 +117,6 @@ class AbstractFormField(Orderable):
         FieldPanel('default_value', classname="formbuilder-default"),
     ]
 
-
     def save(self, *args, **kwargs):
         """
         When new fields are created, generate a template safe ascii name to use as the
@@ -132,7 +130,6 @@ class AbstractFormField(Orderable):
             self.clean_name = clean_name
 
         super().save(*args, **kwargs)
-
 
     @classmethod
     def _migrate_legacy_clean_name(cls):
@@ -165,7 +162,6 @@ class AbstractFormField(Orderable):
             'Added `clean_name` on %s form field(s)' % objects.count(),
             obj=cls
         )
-
 
     @classmethod
     def check(cls, **kwargs):

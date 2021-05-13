@@ -7,6 +7,8 @@ from wagtail.admin.edit_handlers import RichTextFieldPanel
 from wagtail.admin.rich_text.converters.contentstate import ContentstateConverter
 from wagtail.admin.staticfiles import versioned_static
 from wagtail.core.rich_text import features as feature_registry
+from wagtail.core.telepath import register
+from wagtail.core.widget_adapters import WidgetAdapter
 
 
 class DraftailRichTextArea(widgets.HiddenInput):
@@ -15,6 +17,9 @@ class DraftailRichTextArea(widgets.HiddenInput):
 
     # this class's constructor accepts a 'features' kwarg
     accepts_features = True
+
+    # Draftail has its own commenting
+    show_add_comment_button = False
 
     def get_panel(self):
         return RichTextFieldPanel
@@ -79,3 +84,15 @@ class DraftailRichTextArea(widgets.HiddenInput):
             media += plugin.media
 
         return media
+
+
+class DraftailRichTextAreaAdapter(WidgetAdapter):
+    js_constructor = 'wagtail.widgets.DraftailRichTextArea'
+
+    def js_args(self, widget):
+        return [
+            widget.options,
+        ]
+
+
+register(DraftailRichTextAreaAdapter(), DraftailRichTextArea)

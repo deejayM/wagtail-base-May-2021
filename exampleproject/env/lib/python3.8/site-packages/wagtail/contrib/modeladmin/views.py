@@ -1,13 +1,17 @@
+import warnings
+
 from collections import OrderedDict
 
 from django import forms
 from django.contrib.admin import FieldListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.admin.utils import (
-    get_fields_from_path, label_for_field, lookup_field, lookup_needs_distinct, prepare_lookup_value, quote, unquote)
+    get_fields_from_path, label_for_field, lookup_field, lookup_needs_distinct,
+    prepare_lookup_value, quote, unquote)
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import (
-    FieldDoesNotExist, ImproperlyConfigured, ObjectDoesNotExist, PermissionDenied, SuspiciousOperation)
+    FieldDoesNotExist, ImproperlyConfigured, ObjectDoesNotExist, PermissionDenied,
+    SuspiciousOperation)
 from django.core.paginator import InvalidPage, Paginator
 from django.db import models
 from django.db.models.fields.related import ManyToManyField, OneToOneRel
@@ -27,6 +31,7 @@ from wagtail.admin import messages
 from wagtail.admin.views.mixins import SpreadsheetExportMixin
 
 from .forms import ParentChooserForm
+
 
 try:
     from django.db.models.sql.constants import QUERY_TERMS
@@ -108,15 +113,26 @@ class WMABaseView(TemplateView):
 
 
 class ModelFormView(WMABaseView, FormView):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.edit_handler = self.get_edit_handler()
+
+    def get_form(self):
+        form = super().get_form()
+        self.edit_handler = self.edit_handler.bind_to(form=form)
+        return form
 
     def get_edit_handler(self):
+        instance = self.get_instance()
         edit_handler = self.model_admin.get_edit_handler(
-            instance=self.get_instance(), request=self.request
+            instance=instance, request=self.request
         )
-        return edit_handler.bind_to(model=self.model_admin.model)
+        return edit_handler.bind_to(
+            model=self.model_admin.model, request=self.request, instance=instance
+        )
 
     def get_form_class(self):
-        return self.get_edit_handler().get_form_class()
+        return self.edit_handler.get_form_class()
 
     def get_success_url(self):
         return self.index_url
@@ -136,19 +152,34 @@ class ModelFormView(WMABaseView, FormView):
             js=self.model_admin.get_form_view_extra_js()
         )
 
-    def get_context_data(self, **kwargs):
-        instance = self.get_instance()
-        edit_handler = self.get_edit_handler()
-        form = self.get_form()
-        edit_handler = edit_handler.bind_to(
-            instance=instance, request=self.request, form=form)
+    def get_context_data(self, form=None, **kwargs):
+        if form is None:
+            form = self.get_form()
+
+        prepopulated_fields = self.get_prepopulated_fields(form)
         context = {
             'is_multipart': form.is_multipart(),
-            'edit_handler': edit_handler,
+            'edit_handler': self.edit_handler,
             'form': form,
+            'prepopulated_fields': prepopulated_fields,
         }
         context.update(kwargs)
         return super().get_context_data(**context)
+
+    def get_prepopulated_fields(self, form):
+        fields = []
+        for field_name, dependencies in self.model_admin.get_prepopulated_fields(self.request).items():
+            missing_dependencies = [f"'{f}'" for f in dependencies if f not in form.fields]
+            if len(missing_dependencies) != 0:
+                missing_deps_string = ", ".join(missing_dependencies)
+                dependency_string = "dependencies" if len(missing_dependencies) > 1 else "dependency"
+                warnings.warn(
+                    f"Missing {dependency_string} {missing_deps_string} for prepopulated_field '{field_name}''.",
+                    category=RuntimeWarning
+                )
+            elif field_name in form.fields:
+                fields.append({'field': form[field_name], 'dependencies': [form[f] for f in dependencies]})
+        return fields
 
     def get_success_message(self, instance):
         return _("%(model_name)s '%(instance)s' created.") % {
@@ -177,7 +208,7 @@ class ModelFormView(WMABaseView, FormView):
         messages.validation_error(
             self.request, self.get_error_message(), form
         )
-        return self.render_to_response(self.get_context_data())
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class InstanceSpecificView(WMABaseView):
@@ -555,7 +586,6 @@ class IndexView(SpreadsheetExportMixin, WMABaseView):
 
         # Apply search results
         return self.get_search_results(request, qs, self.query)
-
 
     def apply_select_related(self, qs):
         if self.select_related is True:
