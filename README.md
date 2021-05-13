@@ -71,3 +71,51 @@ path('api/v2/', api_router.urls),
 [9] Add "rest_framework" to the INSTALLED_APPS list in settings/base.py
 http://127.0.0.1:8000/api/v2/pages/?type=news.NewsPage will now show your endpoints.
 
+
+[DJ] - at this point I'm going to jump out of this and create an vue.js installation in Frontend.
+In my opinion Vue.js should include the following
+Axios
+Vue-router
+Vuetify
+Vuex
+
+DEV DEPS
+cli-plugin-babel
+cli-plugin-router
+cli-plugin-vuex
+vue/cli-service
+Sass
+Sass-loader
+vue-cli-plugin-vuetify
+vue-template-compiler
+vuetify-loader
+
+Lets start the Vue.js installation at . https://flowmoco.atlassian.net/wiki/spaces/TB/pages/1973846026/Firebase%2Band%2BVue%2B-
+
+[1] $npm install -f @vue/cli
+[2] $vue create frontend
+[3] Template [Vue2] node-sass, babel, router, vuex, eslint, unit-mocha
+[4] here we can cd into the folder and 'npm run serve.
+[5] We can now see a vue site at
+
+http://localhost:8081/
+
+Next up lets go back to these instructions
+
+https://www.youtube.com/watch?v=xUWd3o6z2bk
+and the instructions and code can be found here https://gist.github.com/tomdyson/abf1e973db4dcd50b388816f8c20adb0
+
+[DJ] In our installation we have the {{ msg }} being out put in src/components/HelloWorld.vue
+
+And the wording in that message set in /src/views/Home.vue
+
+[1] The HelloWorld.vue here is the child page.  So I've removed that and the call to HelloWorld.vue and replaced with code to pull from the backend API
+[2] We'll need to import axios as well.
+[3] At this stage we only get our header outputting and nothing from Django.
+[error] XMLHttpRequest at XX has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+[4] Going back into the tutorial above we can use the project 'django-cors-headers' to sort this.
+https://github.com/adamchainz/django-cors-headers
+[5] cd back into the backend folder 'exampleproject/app' and
+$pip install django-cors-headers
+
+[error] this is as far as I got and had issue with installing this.
