@@ -1,4 +1,11 @@
 # wagtail-base-May-2021
+
+To run the frontend and backend locally then plase view the notes at
+1. exampleproject/README.md
+2. frontend/README.md
+
+
+# The following is how the initial set up of Frontend and Backend was made
 This is an initial set to list the current best procedures for a new Wagtail site.
 
 

@@ -51,11 +51,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'wagtail.api.v2',
-    "rest_framework"
+    "rest_framework",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -164,3 +166,7 @@ WAGTAIL_SITE_NAME = "app"
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 BASE_URL = 'http://example.com'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+]
